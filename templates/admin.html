@@ -1,0 +1,132 @@
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+<h2>Painel Administrativo</h2>
+
+{% if is_admin %}
+<!-- MENU 3 PONTINHOS -->
+<div style="position:fixed; top:15px; right:20px;">
+    <button onclick="toggleMenu()" style="
+        font-size:26px;
+        border:none;
+        background:none;
+        cursor:pointer;
+        color:#333;
+    ">
+        ⋮
+    </button>
+
+    <div id="menu" style="
+        display:none;
+        background:#fff;
+        padding:10px;
+        border-radius:10px;
+        margin-top:5px;
+        box-shadow:0 0 10px rgba(0,0,0,0.2);
+    ">
+        <button onclick="mostrar('usuarios')">👤 Usuários</button>
+        <button onclick="mostrar('tarefas')">📋 Tarefas</button>
+        <button onclick="mostrar('tanques')">🐟 Tanques Despesca</button>
+        <button onclick="resetDia()">♻️ Reiniciar dia</button>
+    </div>
+</div>
+{% endif %}
+
+<hr>
+
+<!-- ================= ABA TAREFAS ================= -->
+<div id="tarefas" class="aba">
+    <h3>Criar nova tarefa</h3>
+    <form method="POST" action="/criar_tarefa">
+        <input name="nome" placeholder="Nova tarefa" required>
+        <button type="submit">Criar</button>
+    </form>
+
+    <hr>
+
+    <h3>Tarefas cadastradas</h3>
+    <ul>
+      {% for task in tasks %}
+        <li>
+          <span>{{ task.nome }}</span>
+          <a href="/remover_tarefa/{{ task.id }}" onclick="return confirm('Tem certeza que quer remover esta tarefa?');" style="color:red; text-decoration:none; font-weight:bold;">Remover</a>
+        </li>
+      {% endfor %}
+    </ul>
+
+    <hr>
+
+    <h3>Registros</h3>
+    {% for log in logs %}
+    <p>
+        Funcionário: {{ log.user.nome }} |
+        Tarefa: {{ log.task.nome }} |
+        Início: {{ log.inicio_br }} |
+        Fim: {{ log.fim_br }}
+    </p>
+    {% endfor %}
+</div>
+
+<!-- ================= ABA USUÁRIOS ================= -->
+<div id="usuarios" class="aba" style="display:none;">
+    <h3>Criar Funcionário</h3>
+    <form method="POST" action="/criar_usuario">
+        <input name="nome" placeholder="Nome" required>
+        <input name="senha" placeholder="Senha" required>
+        <button type="submit">Criar usuário</button>
+    </form>
+
+    <hr>
+
+    <h3>Funcionários cadastrados</h3>
+    {% for user in users %}
+    {% if not user.is_admin %}
+    <p>
+        {{ user.nome }}
+        <a href="/remover_usuario/{{user.id}}">
+            <button>Remover</button>
+        </a>
+    </p>
+    {% endif %}
+    {% endfor %}
+</div>
+
+<!-- ================= ABA TANQUES ================= -->
+<div id="tanques" class="aba" style="display:none;">
+    <h3>Adicionar tanque bloqueado</h3>
+    <form method="POST" action="/add_tanque">
+        <input name="numero" placeholder="Número do tanque" required>
+        <button type="submit">Adicionar</button>
+    </form>
+
+    <hr>
+
+    <h3>Tanques bloqueados</h3>
+    {% for t in tanques %}
+    <p>
+        ❌ Tanque {{t.numero}}
+        <a href="/remover_tanque/{{t.id}}">
+            <button>Remover</button>
+        </a>
+    </p>
+    {% endfor %}
+</div>
+
+<!-- ================= SCRIPT ================= -->
+<script>
+function toggleMenu(){
+    let menu = document.getElementById("menu");
+    menu.style.display = menu.style.display === "block" ? "none" : "block";
+}
+
+function mostrar(id){
+    document.querySelectorAll(".aba").forEach(div => div.style.display = "none");
+    document.getElementById(id).style.display = "block";
+    document.getElementById("menu").style.display = "none";
+}
+
+function resetDia() {
+    if(confirm("Tem certeza que quer reiniciar o dia? Isso apagará todas as tarefas, logs e tanques!")) {
+        fetch("/reset_dia", {method: "POST"}).then(() => location.reload());
+    }
+}
+</script>

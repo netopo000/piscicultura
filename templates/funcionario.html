@@ -1,0 +1,38 @@
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+<h2>Painel dos Funcionários</h2>
+
+<h3>📝 Tarefas disponíveis</h3>
+{% for task in tasks %}
+    {% set log = logs|selectattr("task_id", "equalto", task.id)|list|first %}
+    {% if not log %}
+        <p>
+            {{ task.nome }}
+            <a href="/iniciar/{{ task.id }}"><button>Iniciar tarefa</button></a>
+        </p>
+    {% endif %}
+{% endfor %}
+
+<h3>⏳ Tarefas em andamento</h3>
+{% for log in logs %}
+    {% if log.inicio and not log.fim %}
+        <p>
+            {{ log.task.nome }} — Iniciado: {{ log.inicio_br }}
+            <a href="/finalizar/{{ log.id }}"><button>Finalizar tarefa</button></a>
+        </p>
+    {% endif %}
+{% endfor %}
+
+<h3>✅ Tarefas finalizadas</h3>
+{% for log in logs %}
+    {% if log.fim %}
+        <p>
+            {{ log.task.nome }} — Início: {{ log.inicio_br }} | Fim: {{ log.fim_br }}
+        </p>
+    {% endif %}
+{% endfor %}
+
+<h3>🚫 Tanques bloqueados</h3>
+{% for t in tanques %}
+    <p>❌ Tanque {{ t.numero }} NÃO tratar</p>
+{% endfor %}
